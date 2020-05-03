@@ -24,17 +24,19 @@
   <h5>Upload assistants profile picture</h5>
 
   <div class="form-check">
-    <input checked class="form-check-input" type="radio" name="photo" id="photo" value="photo">
+    <input checked class="form-check-input" type="radio" name="photo" id="photo" value="ownPhoto">
     <label class="form-check-label" for="photo">
       <input type="file" name="picture" class="form-control-file" id="profilePicture" name="profilePicture">
     </label>
   </div>
 
   <div class="form-check mt-3">
-    <input class="form-check-input" type="radio" name="photo" id="photo" value="photo">
+    <input class="form-check-input" type="radio" name="photo" id="photo" value="generatedPhoto">
     <label class="form-check-label" for="photo">
-      <button type="button" class="btn btn-secondary" id="generateButton">Generate one for me</button>
-      <div class="mt-3" id="image" name="profilePicture"></div>
+      <button type="button" class="btn btn-secondary disabled" id="generateButton">Generate one for me</button>
+      <div class="mt-3" id="image" name="profilePicture">
+        <img src="/static/avatar_temporary.jpg" alt="photo" width="25%" height="25%">
+      </div>
     </label>
   </div>
 

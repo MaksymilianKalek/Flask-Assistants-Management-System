@@ -3,6 +3,9 @@ from requests import get
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
+import urllib.request
+from random import randint
+from PIL import Image
 
 # Jobs
 jobs = get("http://api.dataatwork.org/v1/jobs").json()
@@ -41,6 +44,15 @@ class Assistants(db.Model):
     self.picture = picture
 
 # Routes
+@app.after_request
+def add_header(r):
+
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
+
 @app.route("/")
 def home():
   return redirect(url_for("assist_source"))
@@ -50,32 +62,45 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/assistants/create/", methods=["POST", "GET"])
-def assist_create():
+def assist_create():  
   if request.method == "POST":
     username = request.form["username"]
     first_name = request.form["firstName"]
     last_name = request.form["lastName"]
     profession = request.form["professions"]
+    photo_radio = request.form["photo"]
 
-    if "picture" not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+    if photo_radio == "ownPhoto":
+      if "picture" not in request.files:
+              flash('No file part')
+              return redirect(request.url)
 
-    f = request.files["picture"]
+      f = request.files["picture"]
 
-    if f.filename == "":
-            flash("No file selected")
-    pic_name = secure_filename(f.filename)
-    pic_url = f"static/{pic_name}"
-
-    if f and allowed_file(f.filename):
-      f.save(pic_url)
-    
-    picture = pic_name
+      if f.filename == "":
+              flash("No file selected")
+      pic_name = secure_filename(f.filename)
+      pic_url = f"static/{pic_name}"
 
 
-    # print(username + first_name + last_name + profession)
-    
+      if f and allowed_file(f.filename):
+        f.save(pic_url)
+
+      picture = pic_name
+
+    else:
+      pic_name = f"avatar_{username}.jpg"
+      os.rename("static/avatar_temporary.jpg", f"static/{pic_name}")
+      picture = pic_name
+
+    basewidth = 300
+  
+    img = Image.open(f"static/{pic_name}")
+    wpercent = (basewidth/float(img.size[0]))
+    hsize = int((float(img.size[1]) * float(wpercent)))
+    img = img.resize((basewidth, hsize), Image.ANTIALIAS)
+    img.save(f"static/{pic_name}") 
+
     found_user = Assistants.query.filter_by(username=username).first()
     if found_user:
       return render_template("assist.html")
@@ -86,6 +111,13 @@ def assist_create():
 
     return render_template("assist_create.html", jobs=job_titles)
   else:
+
+    picture_url = "http://thispersondoesnotexist.com/image"
+    opener = urllib.request.build_opener()
+    opener.addheaders = [("User-agent", "Mozilla/5.0")]
+    urllib.request.install_opener(opener)
+    urllib.request.urlretrieve(picture_url, f"static/avatar_temporary.jpg")
+
     return render_template("assist_create.html", jobs=job_titles)
 
 @app.route("/assistants/update/<string:username>", methods=["POST", "GET"])
@@ -140,7 +172,10 @@ def assist_source():
 def assist_delete(username):
   found_user = Assistants.query.filter_by(username=username).first()
   if request.method == "POST":
-    os.remove(f"static/{found_user.picture}")
+    try:
+      os.remove(f"static/{found_user.picture}")
+    except:
+      pass
     db.session.delete(found_user)
     db.session.commit()
     return redirect(url_for("assist_source"))
