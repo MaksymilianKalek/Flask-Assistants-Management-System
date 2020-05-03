@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}View all assistants{% endblock %}
+{% block content %}
+
+<ul>
+  {% for assist in assistants %}
+  <li class="list-group-item">
+    <div class="row justify-content-center">
+      <div class="col-md-3 align-self-center">
+        <h5 class="mt-2">Username: {{ assist.username }}</h5>
+        <p class="mt-2">First name: {{ assist.first_name }}, Last name: {{ assist.last_name }}</p>
+      </div>
+
+      <div class="col-md-3 align-self-center">
+        <h5 class="mt-2">Profession: {{ assist.profession }}</h5>
+      </div>
+
+      <div class="col-md-1 align-self-center">
+        <h5 class="mt-2">Photo:</h5>
+      </div>
+      <div class="col-md-2 align-self-center">
+        <img src="{{ url_for('static', filename=assist.picture) }}" alt="photo" width="100%" height="100%">
+      </div>
+
+      <div class="col-md-3 align-self-end text-right mb-4">
+        <a href="/assistants/update/{{ assist.username }}"><button type="submit" value="update"
+            class="btn btn-primary mt-4 mr-3">Update</button></a>
+        <a href="/assistants/delete/{{ assist.username }}"><button type="submit" value="submit" class="btn btn-secondary mt-4">Delete</button></a>
+      </div>
+    </div>
+  </li>
+  <br><br>
+  {% endfor %}
+</ul>
+
+{% endblock %}

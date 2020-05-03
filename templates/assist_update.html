@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Assistants Create{% endblock %}
+{% block content %}
+<div class="mb-3">
+  <h1>Update an assistant</h1>
+</div>
+<form action="" method="POST" enctype="multipart/form-data">
+
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" class="form-control" name="username" id="username" placeholder="{{assist.username}}">
+  </div>
+
+  <div class="form-group">
+    <label for="firstName">First name</label>
+    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="{{assist.first_name}}">
+  </div>
+
+  <div class="form-group">
+    <label for="lastName">Last name</label>
+    <input type="text" class="form-control" name="lastName" id="lastName" placeholder="{{assist.last_name}}">
+  </div>
+
+  <h5>Change assistants profile picture</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="photo" id="photo" value="photo">
+    <label class="form-check-label" for="photo">
+      <input type="file" name="picture" class="form-control-file" id="profilePicture" name="profilePicture">
+    </label>
+  </div>
+
+  <div class="form-check mt-3">
+    <input class="form-check-input" type="radio" name="photo" id="photo" value="photo">
+    <label class="form-check-label" for="photo">
+      <button type="button" class="btn btn-secondary" id="generateButton">Generate one for me</button>
+      <div class="mt-3" id="image" name="profilePicture"></div>
+    </label>
+  </div>
+
+  <h5>Change assistants profession:</h5>
+  {% for title in jobs %}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="professions" id="radio" value="{{ title }}">
+      <label class="form-check-label" for="radio">
+        {{ title }}
+      </label>
+    </div>
+  {% endfor %}
+  <button type="submit" value="submit" class="btn btn-primary mt-3">Update assistant</button>
+</form>
+
+{% endblock %}
