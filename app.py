@@ -6,6 +6,7 @@ import os
 import urllib.request
 from random import randint
 from PIL import Image
+from flask_seeder import FlaskSeeder, Seeder, Faker, generator
 
 # Jobs
 jobs = get("http://api.dataatwork.org/v1/jobs").json()
@@ -24,9 +25,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "hello"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
-
 # Database
 db = SQLAlchemy(app)
+db.init_app(app)
 
 class Assistants(db.Model):
   _id = db.Column("id", db.Integer, primary_key=True)
@@ -42,6 +43,9 @@ class Assistants(db.Model):
     self.username = username
     self.profession = profession
     self.picture = picture
+
+seeder = FlaskSeeder()
+seeder.init_app(app, db)
 
 # Routes
 @app.after_request
