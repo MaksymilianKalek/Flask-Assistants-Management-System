@@ -7,8 +7,9 @@ import urllib.request
 from random import randint
 from PIL import Image
 from flask_seeder import FlaskSeeder, Seeder, Faker, generator
+from flask_migrate import Migrate
 
-# Jobs
+# List of jobs
 jobs = get("http://api.dataatwork.org/v1/jobs").json()
 job_titles = []
 
@@ -18,16 +19,17 @@ for job in jobs:
   except:
     continue
 
-# Flask
+# Flask app setup
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "hello"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
-# Database
+# Database config
 db = SQLAlchemy(app)
 db.init_app(app)
+migrate = Migrate(app, db)
 
 class Assistants(db.Model):
   _id = db.Column("id", db.Integer, primary_key=True)
@@ -44,27 +46,30 @@ class Assistants(db.Model):
     self.profession = profession
     self.picture = picture
 
+# Seeding database
 seeder = FlaskSeeder()
 seeder.init_app(app, db)
 
-# Routes
+# Routes cache clearing
 @app.after_request
 def add_header(r):
-
     r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     r.headers["Pragma"] = "no-cache"
     r.headers["Expires"] = "0"
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
 
+# Home route
 @app.route("/")
 def home():
   return redirect(url_for("assist_source"))
 
+# Allowed extensions
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Assistance Creation route
 @app.route("/assistants/create/", methods=["POST", "GET"])
 def assist_create():  
   if request.method == "POST":
@@ -124,6 +129,7 @@ def assist_create():
 
     return render_template("assist_create.html", jobs=job_titles)
 
+# Assistance Update route
 @app.route("/assistants/update/<string:username>", methods=["POST", "GET"])
 def assist_update(username):
   found_user = Assistants.query.filter_by(username=username).first()
@@ -131,6 +137,7 @@ def assist_update(username):
     new_username = request.form["username"]
     new_first_name = request.form["firstName"]
     new_last_name = request.form["lastName"]
+
     try:
       new_profession = request.form["professions"]
       if new_profession != found_user.profession:
@@ -138,18 +145,45 @@ def assist_update(username):
     except:
       pass
     
-    f = request.files["picture"]
+    try:
+      photo_checkbox = request.form["photo"]
 
-    if f.filename == "":
+      if photo_checkbox == "ownPhoto":
+        if "picture" not in request.files:
+          return redirect(request.url)
+
+        f = request.files["picture"]
+
+        pic_name = secure_filename(f.filename)
+        pic_url = f"static/{pic_name}"
+
+        if f and allowed_file(f.filename):
+          f.save(pic_url)
+
+        new_picture = pic_name
+        os.remove(f"static/{found_user.picture}")
+
+      else:
+        os.remove(f"static/{found_user.picture}")
+        pic_name = f"avatar_{username}.jpg"
+        os.rename("static/avatar_temporary.jpg", f"static/{pic_name}")
+        new_picture = pic_name
+ 
+    except:
       pass
-
-    pic_name = secure_filename(f.filename)
-    pic_url = f"static/{pic_name}"
-
-    if f and allowed_file(f.filename):
-      f.save(pic_url)
     
-    new_picture = pic_name
+    try:
+      basewidth = 300
+  
+      img = Image.open(f"static/{pic_name}")
+      wpercent = (basewidth/float(img.size[0]))
+      hsize = int((float(img.size[1]) * float(wpercent)))
+      img = img.resize((basewidth, hsize), Image.ANTIALIAS)
+      img.save(f"static/{pic_name}")
+
+    except:
+      pass
+    
 
     if new_username != found_user.username and len(new_username) >= 1:
       found_user.username = new_username
@@ -157,21 +191,32 @@ def assist_update(username):
       found_user.first_name = new_first_name
     if new_last_name != found_user.last_name and len(new_last_name) >= 1:
       found_user.last_name = new_last_name
-    if new_picture != found_user.picture and len(new_picture) >= 1:
-      os.remove(f"static/{found_user.picture}")
-      found_user.picture = new_picture
+    
+    try:
+      if new_picture != found_user.picture and len(new_picture) >= 1:
+        found_user.picture = new_picture
+    except:
+      pass
     
     db.session.commit()
 
     return render_template("assist_update.html", jobs=job_titles, assist=found_user)
 
   else:
+    picture_url = "http://thispersondoesnotexist.com/image"
+    opener = urllib.request.build_opener()
+    opener.addheaders = [("User-agent", "Mozilla/5.0")]
+    urllib.request.install_opener(opener)
+    urllib.request.urlretrieve(picture_url, f"static/avatar_temporary.jpg")
+
     return render_template("assist_update.html", jobs=job_titles, assist=found_user)
 
+# Assistance Source route
 @app.route("/assistants/")
 def assist_source():
   return render_template("assist.html", assistants=Assistants.query.all())
 
+# Assistance deletion route
 @app.route("/assistants/delete/<string:username>", methods=["POST", "GET", "DELETE"])
 def assist_delete(username):
   found_user = Assistants.query.filter_by(username=username).first()
@@ -185,7 +230,6 @@ def assist_delete(username):
     return redirect(url_for("assist_source"))
   else:
     return render_template("assist_delete.html", jobs=job_titles, assist=found_user)
-
 
 if __name__ == "__main__":
   db.create_all()

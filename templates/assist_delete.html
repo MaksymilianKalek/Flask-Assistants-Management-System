@@ -7,16 +7,24 @@
     <h2 class="mt-4">Are you sure you want to delete this assistant?</h2>
     <div class="row justify-content-center">
 
-      <div class="col-md-4 align-self-center">
-        <h5 class="mt-2">Username: {{ assist.username }}</h5>
+      <div class="col-md-3 align-self-center">
+        <h6 class="mt-2">Username: {{ assist.username }}</h6>
         <p class="mt-2">First name: {{ assist.first_name }}, Last name: {{ assist.last_name }}</p>
       </div>
 
-      <div class="col-md-4 align-self-center">
-        <h5 class="mt-2">Profession: {{ assist.profession }}</h5>
+      <div class="col-md-3 align-self-center">
+        <h6 class="mt-2">Profession: {{ assist.profession }}</h6>
       </div>
 
-      <div class="col-md-4 align-self-end text-right mb-4">
+      <div class="col-md-1 align-self-center">
+        <h6 class="mt-2">Photo: </h6>
+      </div>
+      <div class="col-md-2 align-self-center">
+        <img src="{{ url_for('static', filename=assist.picture) }}" alt="photo" width="100%" height="100%">
+      </div>
+
+
+      <div class="col-md-3 align-self-end text-right mb-4">
         <form action="#" method="POST">
           <a href="/assistants/delete/{{ assist.username }}"><button type="submit" value="update"
               class="btn btn-primary mt-4">DELETE</button></a>

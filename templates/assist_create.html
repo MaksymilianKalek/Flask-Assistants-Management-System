@@ -13,7 +13,8 @@
 
   <div class="form-group">
     <label for="firstName">First name</label>
-    <input required type="text" class="form-control" name="firstName" id="firstName" placeholder="Assistants first name">
+    <input required type="text" class="form-control" name="firstName" id="firstName"
+      placeholder="Assistants first name">
   </div>
 
   <div class="form-group">
@@ -33,23 +34,28 @@
   <div class="form-check mt-3">
     <input class="form-check-input" type="radio" name="photo" id="photo" value="generatedPhoto">
     <label class="form-check-label" for="photo">
-      <button type="button" class="btn btn-secondary disabled" id="generateButton">Generate one for me</button>
+      <button type="button" class="btn btn-secondary disabled" id="generateButton">Choose generated one</button>
       <div class="mt-3" id="image" name="profilePicture">
         <img src="/static/avatar_temporary.jpg" alt="photo" width="25%" height="25%">
       </div>
     </label>
   </div>
-
-  <h5>Choose assistants profession:</h5>
-  {% for title in jobs %}
-    <div class="form-check">
-      <input class="form-check-input" type="radio" name="professions" id="radio" value="{{ title }}" checked>
-      <label class="form-check-label" for="radio">
-        {{ title }}
-      </label>
-    </div>
-  {% endfor %}
+  <br>
+  <ul class="list-group">
+    <h5>Choose assistants profession:</h5>
+    {% for title in jobs %}
+    <li class="list-group-item">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="professions" id="radio" value="{{ title }}" checked>
+        <label class="form-check-label" for="radio">
+          {{ title }}
+        </label>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
   <button type="submit" value="submit" class="btn btn-primary mt-3">Create assistant</button>
+  <br>
 </form>
 
 {% endblock %}

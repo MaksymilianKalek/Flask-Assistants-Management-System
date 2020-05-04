@@ -19,5 +19,5 @@ class DemoSeeder(Seeder):
 
     # Create 5 users
     for assist in faker.create(5):
-      print(f"Adding user: {assist}")
+      print(f"Adding user: {assist.username}, {assist.first_name}, {assist.last_name}, {assist.profession}")
       self.db.session.add(assist)
