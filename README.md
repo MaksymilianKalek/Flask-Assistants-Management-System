@@ -1,6 +1,6 @@
 # Assistants Management System
 
-This is a Flask application which allows you to:
+This is a simple CRUD Flask application that I've created for one of the recruitment processes that I was a part of which allows you to:
 - Create assistants
 - Update their informations
 - Delete them
